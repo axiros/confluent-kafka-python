@@ -322,7 +322,7 @@ PyObject *
 Kafka_generic_get_metadata(Handle *self, PyObject *args, PyObject *kwargs)
 {
     CallState cs;
-    PyObject *result;
+    PyObject *result = NULL;
 
     rd_kafka_resp_err_t err;
     const rd_kafka_metadata_t *metadata = NULL;
@@ -361,8 +361,6 @@ Kafka_generic_get_metadata(Handle *self, PyObject *args, PyObject *kwargs)
     if (err != RD_KAFKA_RESP_ERR_NO_ERROR) {
         cfl_PyErr_Format(
             err, "Failed to get metadata: %s", rd_kafka_err2str(err));
-
-        result = NULL;
         goto end;
     }
 
