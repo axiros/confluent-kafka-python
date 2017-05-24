@@ -1279,7 +1279,47 @@ rd_kafka_conf_t *common_conf_setup (rd_kafka_type_t ktype,
 			}
 			Py_DECREF(ks);
 			continue;
-		}
+		} else if (!strcmp(k, "log_cb")) {
+            Py_DECREF(ks);
+            PyObject *stderr_cb_name = cfl_PyUnistr(_FromString("stderr"));
+            PyObject *syslog_cb_name = cfl_PyUnistr(_FromString("syslog"));
+
+            if ((stderr_cb_name == NULL) || (syslog_cb_name == NULL)) {
+                goto log_cb_error;
+            }
+
+            int cmp_result;
+
+            cmp_result = PyObject_RichCompareBool(stderr_cb_name, vo, Py_EQ);
+            if (cmp_result == -1) {
+                goto log_cb_error;
+            } else if (cmp_result == 1) {
+                rd_kafka_conf_set_log_cb(conf, rd_kafka_log_print);
+                Py_XDECREF(syslog_cb_name);
+                Py_XDECREF(stderr_cb_name);
+                continue;
+            }
+
+            cmp_result = PyObject_RichCompareBool(syslog_cb_name, vo, Py_EQ);
+            if (cmp_result == -1) {
+                goto log_cb_error;
+            } else if (cmp_result == 1) {
+                rd_kafka_conf_set_log_cb(conf, rd_kafka_log_syslog);
+                Py_XDECREF(syslog_cb_name);
+                Py_XDECREF(stderr_cb_name);
+                continue;
+            }
+
+            PyErr_SetString(
+                PyExc_ValueError,
+                "log_cb only supports 'stderr' or 'syslog'");
+log_cb_error:
+            Py_XDECREF(syslog_cb_name);
+            Py_XDECREF(stderr_cb_name);
+            rd_kafka_topic_conf_destroy(tconf);
+            rd_kafka_conf_destroy(conf);
+            return NULL;
+        }
 
 		/* Special handling for certain config keys. */
 		if (ktype == RD_KAFKA_PRODUCER)
