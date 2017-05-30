@@ -15,6 +15,7 @@
  */
 
 #include "confluent_kafka.h"
+#include "get_metadata_impl.h"
 
 
 /****************************************************************************
@@ -643,6 +644,15 @@ static PyMethodDef Consumer_methods[] = {
 	  "  :rtype: None\n"
 	  "\n"
 	},
+
+    {
+        "get_metadata",
+        (PyCFunction)Kafka_generic_get_metadata,
+        METH_VARARGS|METH_KEYWORDS,
+        Kafka_generic_get_metadata_doc
+    },
+
+
 	{ NULL }
 };
 
